@@ -28,9 +28,11 @@ string2Offset=8
 string1Offset=string2Offset+4
 	push ebp
 	mov ebp, esp
+	sub esp, 2
 	push ebx
 	push edx
 	push ecx
+	push eax
 	mov ecx,0
 	mov ebx, dword ptr [ebp+string2Offset] ; ebx = &string2
 	mov edx, dword ptr [ebp+string1Offset] ; edx = &string1
@@ -45,18 +47,23 @@ compare:
 	jmp compare
 
 equal:
+	mov word ptr [ebp-2],1
 	mov al,1
 	jmp done
 
 notEqual:
+	mov word ptr [ebp-2],0
 	mov al,0
 
 done:
+	pop eax
 	pop ecx
 	pop edx
 	pop ebx
+	mov al,byte ptr [ebp-2]
 	mov esp, ebp
-	ret 8
+	pop ebp
+	ret 10
 	
 
 CmpStr ENDP
