@@ -1,17 +1,20 @@
 INCLUDE irvine32.inc
 
 .data
-stringPtr BYTE "hello",0
-stringSize WORD 5
-locaction WORD 8
+stringPtr BYTE "947",0
+stringSize WORD 3
+locaction WORD 2
+zero BYTE "0", 0
 
 .code
 main PROC
+     mov eax, 0
      push offset stringPtr
      push locaction
      push stringSize
      call dumpRegs
      call val
+     call writeInt
      call dumpRegs
 main ENDP
 
@@ -40,6 +43,7 @@ val PROC
      inRange:
           add ecx, edx
           mov al, [ecx]
+          sub al, "0"
           jmp done
 
      notInRange:
