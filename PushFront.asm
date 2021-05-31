@@ -42,16 +42,20 @@ findBSize:
 	jmp findBSize
 foundSize:
 	mov ebx, [ebp+offseta]
+	inc ecx
 	sub ebx,ecx
 	mov ecx,0
 concatBToA:
 	mov dh,byte ptr[eax+ecx] ; dh = b[ecx]
 	cmp dh,0
-	je donePushFront
+	je concatSpace
 	mov [ebx+ecx],dh
 	inc ecx
 	jmp concatBToA
 
+concatSpace:
+	mov dh, " "
+	mov [ebx+ecx],dh
 
 donePushFront:
 	pop ecx

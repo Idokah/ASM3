@@ -39,6 +39,8 @@ findEndOfA:
 	inc ecx
 	jmp findEndOfA
 finishA:
+	mov byte ptr[eax+ecx]," "
+	inc ecx
 	add eax, ecx
 	mov ecx,0
 copyBtoResult:
@@ -48,6 +50,7 @@ copyBtoResult:
 	mov [eax+ecx],dh
 	inc ecx
 	jmp copyBtoResult
+	
 donePushBack:
 	mov byte ptr [eax+ecx], dh
 	pop ecx
