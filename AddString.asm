@@ -24,7 +24,7 @@ main ENDP
 
 
 ; Receive offset of two strings, and one offset of result string
-; return the sum in the result string and its len in EDI
+; return the sum in the result string and its len in EDX
 AddString PROC
      string2SizeOffset=8
      string1SizeOffset=string2SizeOffset+2
@@ -37,7 +37,7 @@ AddString PROC
      push eax
      push ebx
      push ecx
-     push edx
+     push edi
 
      mov edi, [ebp + resStringOffset]
      mov cx, word ptr [ebp + string2SizeOffset]
@@ -104,11 +104,15 @@ AddString PROC
      
      done:
           mov byte ptr [edi], 0
-          sub edi, [ebp + resStringOffset]   ; returning in edi the result string len
+
           mov edx, [ebp + resStringOffset]
           push edx
           call ReverseString
-          pop edx
+
+          mov edx, edi
+          sub edx, [ebp + resStringOffset]   ; returning in edx the result string len
+
+          pop edi
           pop ecx
           pop ebx
           pop eax
