@@ -9,7 +9,6 @@ result byte "a",0
 main PROC
 push offset a
 push offset b
-push offset result
 call PushBack
 mov edx,offset result
 call WriteString
@@ -21,8 +20,7 @@ main ENDP
 ;recv offset of string a, offset of string b, and offset of empty string - result
 ;returns in result : conactenation of a,b
 PushBack PROC
-offsetResult=8
-offsetb=offsetResult+4
+offsetb=8
 offseta=offsetb+4
 	push ebp
 	mov ebp, esp
@@ -33,16 +31,15 @@ offseta=offsetb+4
 	mov ecx,0
 	mov eax,dword ptr[ebp+offseta] ;		eax = &a
 	mov ebx,dword ptr[ebp+offsetResult] ;	ebx = &result
-copyAtoResult:
+
+findEndOfA:
 	mov dh,byte ptr[eax+ecx] ; dh = a[ecx]
 	cmp dh,0
 	je finishA
-	mov [ebx+ecx],dh
 	inc ecx
-	jmp copyAtoResult
+	jmp findEndOfA
 finishA:
-	add ebx, ecx
-	mov eax, dword ptr[ebp+offsetb]
+	add eax, ecx
 	mov ecx,0
 copyBtoResult:
 	mov dh,byte ptr[eax+ecx] ; dh = b[ecx]
