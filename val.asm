@@ -3,7 +3,7 @@ INCLUDE irvine32.inc
 .data
 stringPtr BYTE "947",0
 stringSize WORD 3
-locaction WORD 2
+locaction WORD -1
 zero BYTE "0", 0
 
 .code
@@ -37,8 +37,10 @@ val PROC
 	mov ecx, dword ptr [ebp + stringPtrOffset] 
 
      CMP dx, bx
-     JL inRange
-     jmp notInRange
+     JGE notInRange
+     CMP dx, 0
+     JL notInRange
+     jmp inRange
 
      inRange:
           add ecx, edx

@@ -1,10 +1,10 @@
 INCLUDE irvine32.inc
 
 .data
-string1 BYTE "235",0
-string1Size WORD 3
-string2 BYTE "825",0
-string2Size WORD 3
+string1 BYTE "1",0
+string1Size WORD 1
+string2 BYTE "99",0
+string2Size WORD 2
 resString BYTE 4 DUP("0") ; max(string1Size,string2Size) + 1 (for 0)
 
 .code     
@@ -21,8 +21,10 @@ main PROC
      call dumpRegs
 main ENDP
 
+
+
 ; Receive offset of two strings, and one offset of result string
-; return the sum in the result string
+; return the sum in the result string and its len in EDI
 AddString PROC
      string2SizeOffset=8
      string1SizeOffset=string2SizeOffset+2
@@ -36,7 +38,6 @@ AddString PROC
      push ebx
      push ecx
      push edx
-     push edi
 
      mov edi, [ebp + resStringOffset]
      mov cx, word ptr [ebp + string2SizeOffset]
@@ -46,11 +47,8 @@ AddString PROC
      mov dl, 0 ; dl will hold the carry
 
      loopi:
-          cmp cx, -1
-          JE checkFinalCarry
-          cmp bx, -1
-          JE checkFinalCarry
-     
+          jmp checkLoopCondition
+       continue:
           ; calling val for first string
           mov ax, 0
           push [ebp + string1Offset]
@@ -87,6 +85,13 @@ AddString PROC
                add edi, 1
                jmp loopi
 
+     checkLoopCondition:
+          cmp bx, 0
+          JGE continue
+          cmp cx, 0
+          JGE continue
+          jmp checkFinalCarry
+
      checkFinalCarry:
           cmp dl, 1
           je endStringWithCarry
@@ -96,12 +101,13 @@ AddString PROC
                mov [edi], al
                add edi,1
                jmp done
+     
      done:
           mov byte ptr [edi], 0
-          mov edi, [ebp + resStringOffset]
-          push edi
+          sub edi, [ebp + resStringOffset]   ; returning in edi the result string len
+          mov edx, [ebp + resStringOffset]
+          push edx
           call ReverseString
-          pop edi
           pop edx
           pop ecx
           pop ebx
@@ -110,8 +116,6 @@ AddString PROC
           pop ebp
 	     ret 16
 AddString ENDP
-
-
 
 ; Receive offset of string, the string size and location
 ; validate if the location less or equal to string size
@@ -132,8 +136,10 @@ val PROC
 	mov ecx, dword ptr [ebp + stringPtrOffset] 
 
      CMP dx, bx
-     JL inRange
-     jmp notInRange
+     JGE notInRange
+     CMP dx, 0
+     JL notInRange
+     jmp inRange
 
      inRange:
           add ecx, edx
