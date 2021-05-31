@@ -10,7 +10,7 @@ main PROC
 push offset a
 push offset b
 call PushBack
-mov edx,offset result
+mov edx,offset a
 call WriteString
 
 call dumpRegs
@@ -30,7 +30,7 @@ offseta=offsetb+4
 	push ecx
 	mov ecx,0
 	mov eax,dword ptr[ebp+offseta] ;		eax = &a
-	mov ebx,dword ptr[ebp+offsetResult] ;	ebx = &result
+	mov ebx,dword ptr[ebp+offsetb] ;		ebx = &b
 
 findEndOfA:
 	mov dh,byte ptr[eax+ecx] ; dh = a[ecx]
@@ -42,14 +42,14 @@ finishA:
 	add eax, ecx
 	mov ecx,0
 copyBtoResult:
-	mov dh,byte ptr[eax+ecx] ; dh = b[ecx]
+	mov dh,byte ptr[ebx+ecx] ; dh = b[ecx]
 	cmp dh,0
 	je donePushBack
-	mov [ebx+ecx],dh
+	mov [eax+ecx],dh
 	inc ecx
 	jmp copyBtoResult
 donePushBack:
-	mov byte ptr [ebx+ecx], dh
+	mov byte ptr [eax+ecx], dh
 	pop ecx
 	pop edx
 	pop ebx
