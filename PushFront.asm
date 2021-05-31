@@ -1,17 +1,17 @@
 INCLUDE irvine32.inc
 
 .data
+f byte "1111111111111"
 a byte "abc",0
 b byte "def",0
-result byte "a",0
 
 .code
 main PROC
 push offset a
 push offset b
-push offset result
-call PushBack
-mov edx,offset result
+
+call PushFront
+mov edx,offset a
 call WriteString
 
 call dumpRegs
@@ -20,9 +20,8 @@ main ENDP
 
 ;recv offset of string a, offset of string b, and offset of empty string - result
 ;returns in result : conactenation of a,b
-PushBack PROC
-offsetResult=8
-offsetb=offsetResult+4
+PushFront PROC
+offsetb=8
 offseta=offsetb+4
 	push ebp
 	mov ebp, esp
@@ -31,36 +30,38 @@ offseta=offsetb+4
 	push edx
 	push ecx
 	mov ecx,0
-	mov eax,dword ptr[ebp+offsetb] ;		eax = &b
-	mov ebx,dword ptr[ebp+offsetResult] ;	ebx = &result
-copyBtoResult:
+	mov ebx,0
+	mov eax,dword ptr[ebp+offsetb]      	; eax = &b
+	;mov ebx,ebp+tempResult
+	;mov ebx,dword ptr[ebp+tempResult] 		; ebx = &result
+findBSize:
+	mov dh,[eax+ecx]
+	cmp dh,0
+	je foundSize
+	inc ecx
+	jmp findBSize
+foundSize:
+	mov ebx, [ebp+offseta]
+	sub ebx,ecx
+	mov ecx,0
+concatBToA:
 	mov dh,byte ptr[eax+ecx] ; dh = b[ecx]
 	cmp dh,0
-	je finishB
+	je donePushFront
 	mov [ebx+ecx],dh
 	inc ecx
-	jmp copyBtoResult
-finishB:
-	add ebx, ecx
-	mov eax, dword ptr[ebp+offseta]
-	mov ecx,0
-copyAtoResult:
-	mov dh,byte ptr[eax+ecx] ; dh = a[ecx]
-	cmp dh,0
-	je donePushBack
-	mov [ebx+ecx],dh
-	inc ecx
-	jmp copyAtoResult
-donePushBack:
-	mov byte ptr [ebx+ecx], dh
+	jmp concatBToA
+
+
+donePushFront:
 	pop ecx
 	pop edx
 	pop ebx
 	pop eax
 	mov esp, ebp
 	pop ebp
-	ret 12
+	ret 8
 	
-PushBack ENDP
+PushFront ENDP
 
 END main
