@@ -9,9 +9,8 @@ aStr BYTE "1",0
 aSize WORD 1
 bStr BYTE "99",0
 bSize WORD 2
-cStr BYTE "100199",0
-cSize WORD 6
-subStringRes BYTE N dup (0)
+cStr BYTE "10019299",0
+cSize WORD 8
 
 .code
 
@@ -26,9 +25,11 @@ checkAddition PROC
      _cSize=_cOffset+4
      _resOffset=_cSize+2
      _addStringRes=-4
+     _subStringRes=_addStringRes-N
      ;call dumpRegs
      push ebp
 	mov ebp, esp
+     sub esp, N
      sub esp, N
 
      push ebx
@@ -37,6 +38,7 @@ checkAddition PROC
      push edi
 
      lea ebx, [ebp + _addStringRes]
+     lea edi, [ebp + _subStringRes]
 
      mov edx, dword ptr [ebp + _aOffset]
      call crlf
@@ -96,14 +98,14 @@ checkAddition PROC
      mov ax, 0
 	push ax                        ; pos  
 	push cx
-	push offset subStringRes
+	push edi
 	call SubString 
 
-     mov edx, offset subStringRes ; delete
+     mov edx, edi ; delete
      call crlf
      call writeString
 
-     push offset subStringRes            ; if (sum == c) return true
+     push edi           ; if (sum == c) return true
      push ebx
      call CmpStr
      cmp al, 0
@@ -127,11 +129,11 @@ checkAddition PROC
      mov ax, [ebp + _cSize]          ; calc the len for SubString
      sub ax, cx
 	push ax
-	push offset subStringRes
+	push edi
 	call SubString 
                 ;;call dumpRegs
 
-     mov edx, offset subStringRes ; delete
+     mov edx, edi ; delete
      call crlf
      call writeString
      
@@ -143,7 +145,7 @@ checkAddition PROC
      mov ax, [ebp + _cSize]          ; calc the len for SubString
      sub ax, cx
      push ax
-     push offset subStringRes
+     push edi
      push cx                 ; sum size
      push ebx ; sum
      push word ptr [ebp + _bSize]
