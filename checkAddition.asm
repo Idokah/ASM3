@@ -3,32 +3,16 @@ INCLUDE irvine32.inc
 .data
 num byte "199100199", 0
 N=Lengthof num
-res byte N*4+1 dup (0)
-
+res byte N*2+1 dup (0)
+;235813
 aStr BYTE "1",0
 aSize WORD 1
 bStr BYTE "99",0
 bSize WORD 2
-cStr BYTE "100199",0
-cSize WORD 6
-;addStringRes BYTE N dup (0)
-subStringRes BYTE N dup (0)
+cStr BYTE "10019299",0
+cSize WORD 8
 
 .code
-main PROC
-     call dumpRegs
-     push offset res
-     push cSize
-     push offset cStr
-     push bSize
-     push offset bStr
-     push aSize
-     push offset aStr
-     ;push offset num
-     ;push stringSize
-     call checkAddition
-     call dumpRegs
-main ENDP
 
 ; Receive 
 ; return 
@@ -41,9 +25,11 @@ checkAddition PROC
      _cSize=_cOffset+4
      _resOffset=_cSize+2
      _addStringRes=-4
+     _subStringRes=_addStringRes-N
      ;call dumpRegs
      push ebp
 	mov ebp, esp
+     sub esp, N
      sub esp, N
 
      push ebx
@@ -52,6 +38,7 @@ checkAddition PROC
      push edi
 
      lea ebx, [ebp + _addStringRes]
+     lea edi, [ebp + _subStringRes]
 
      mov edx, dword ptr [ebp + _aOffset]
      call crlf
@@ -106,7 +93,24 @@ checkAddition PROC
 
      ; call substr
      ; if (sum != c.substr(0, sum.size())) return false
-     
+     push dword ptr [ebp + _cOffset]            ; calc (sum != c.substr(0, sum.size())) for the ending condition
+	push word ptr [ebp + _cSize]
+     mov ax, 0
+	push ax                        ; pos  
+	push cx
+	push edi
+	call SubString 
+
+     mov edx, edi ; delete
+     call crlf
+     call writeString
+
+     push edi           ; if (sum == c) return true
+     push ebx
+     call CmpStr
+     cmp al, 0
+     je _false
+
      mov edx, offset res
      call writeString
            ;;call dumpRegs
@@ -125,11 +129,11 @@ checkAddition PROC
      mov ax, [ebp + _cSize]          ; calc the len for SubString
      sub ax, cx
 	push ax
-	push offset subStringRes
+	push edi
 	call SubString 
                 ;;call dumpRegs
 
-     mov edx, offset subStringRes ; delete
+     mov edx, edi ; delete
      call crlf
      call writeString
      
@@ -141,7 +145,7 @@ checkAddition PROC
      mov ax, [ebp + _cSize]          ; calc the len for SubString
      sub ax, cx
      push ax
-     push offset subStringRes
+     push edi
      push cx                 ; sum size
      push ebx ; sum
      push word ptr [ebp + _bSize]
@@ -376,11 +380,6 @@ val PROC
      push ebx
      push ecx
 
-     mov edx, dword ptr [ebp + stringPtrOffset]
-     call crlf
-     call writeString
-
-
      mov edx, 0
      mov dx, word ptr [ebp + locationOffset]
 	mov bx, word ptr [ebp + stringSizeOffset] 
@@ -557,5 +556,25 @@ done:
 	ret 14
 	
 SubString ENDP 
+
+main PROC
+     call dumpRegs
+     push offset res
+     push cSize
+     push offset cStr
+     push bSize
+     push offset bStr
+     push aSize
+     push offset aStr
+     ;push offset num
+     ;push stringSize
+     call checkAddition
+     call crlf
+     call writeInt
+     mov edx, offset res
+     call crlf
+     call writeString
+     call dumpRegs
+main ENDP
 
 END main
