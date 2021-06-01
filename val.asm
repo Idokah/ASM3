@@ -1,22 +1,4 @@
-INCLUDE irvine32.inc
-
-.data
-stringPtr BYTE "947",0
-stringSize WORD 3
-locaction WORD -1
-zero BYTE "0", 0
-
 .code
-main PROC
-     mov eax, 0
-     push offset stringPtr
-     push locaction
-     push stringSize
-     call dumpRegs
-     call val
-     call writeInt
-     call dumpRegs
-main ENDP
 
 ; Receive offset of string, the string size and location
 ; validate if the location less or equal to string size
@@ -31,10 +13,11 @@ val PROC
      push ebx
      push ecx
 
+
      mov edx, 0
      mov dx, word ptr [ebp + locationOffset]
 	mov bx, word ptr [ebp + stringSizeOffset] 
-	mov ecx, dword ptr [ebp + stringPtrOffset] 
+	mov ecx, dword ptr [ebp + stringPtrOffset]
 
      CMP dx, bx
      JGE notInRange
@@ -60,5 +43,3 @@ val PROC
           pop ebp
 	     ret 8
 val ENDP
-
-END main

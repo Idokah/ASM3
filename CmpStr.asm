@@ -1,27 +1,3 @@
-
-INCLUDE irvine32.inc
-
-.data
-
-string1 BYTE "hello",0
-string2 BYTE "hello",0
-string3 BYTE "hell",0
-
-
-
-.code
-
-main PROC
-mov eax,0
-push offset string1
-push offset string2
-call CmpStr
-
-call WriteInt
-
-call dumpRegs
-main ENDP
-
 ;receive offset of string1,string2 in stack returns 1 if equal else 0
 CmpStr PROC
 string2Offset=8
@@ -63,9 +39,7 @@ done:
 	mov al,byte ptr [ebp-2]
 	mov esp, ebp
 	pop ebp
-	ret 10
+	ret 8
 	
 
 CmpStr ENDP
-
-END main

@@ -1,124 +1,131 @@
-INCLUDE irvine32.inc
-
-.data
-num byte "199100199", 0
-N=Lengthof num
-res byte N*2+1 dup (0)
-subString1 N/2 DUP("0")
-subString2 N/2 DUP("0")
-subString3 N/2 DUP("0")
-
 .code
-main PROC
-     push offset num
-     push N
-     push offset res
-     call dumpRegs
-     call IsAddSeq
-     call dumpRegs
-main ENDP
 
-; Receive 
-; return 
 IsAddSeq PROC
      _stringOffset=8
      _stringSize=_stringOffset+4
      _resStringOffset=_stringSize+2
-     _firstLoopIndex=-4
+     _firstLoopIndex=-2
      _secondLoopIndex=_firstLoopIndex-2
      _firstLoopLimit=_secondLoopIndex-2
      _secondLoopLimit=_firstLoopLimit-2
+     _subString1=_secondLoopLimit-N
+     _subString2=_subString1-N
+     _subString3=_subString2-N
      push ebp
-	mov ebp, esp
+     mov ebp, esp
+	sub esp, 8
+     sub esp,3*N
 
+	push ebx
+	push ecx
+	push edx
+	push edi	
      ;push 
 
      mov bx, 1
      mov [ebp + _firstLoopIndex], bx
-
+     mov dx,0
      mov eax, 0                        ; init first loop
      mov ax, [ebp + _stringSize]
-     div 2
+     mov cx,2h
+     div cx
      add al, 1  ; calc len/2
      mov [ebp + _firstLoopLimit], ax
 
      firstLoop:
+          mov dx,0
           mov ax,[ebp + _firstLoopLimit]     ; check first loop condition
-          cmp [ebp + firstLoopIndex], ax
+          cmp [ebp + _firstLoopIndex], ax
           je notFoundSum
 
           mov ax, 0
           mov ax, [ebp + _stringSize]   ; init second loop
-          sub ax, [ebp + firstLoopIndex]
-          div 2
+          sub ax, [ebp + _firstLoopIndex]
+          mov cx,2
+          div cx
           add al, 1  ; calc len/2
           mov [ebp + _secondLoopLimit], ax
+          
+          mov ax,1
+          mov [ebp + _secondLoopIndex], ax
 
           secondLoop:
                mov ax,[ebp + _secondLoopLimit]     ; check first loop condition
-               cmp [ebp + secondLoopIndex], ax
+               cmp [ebp + _secondLoopIndex], ax
                je endSecondLoop
                
-               push [ebp + _stringOffset]   ;  num.substr(0, i)
-               push [ebp + _stringSize]
-               push 0 ; pos
-               push [ebp + _firstLoopIndex] ; len
-               push offset subString1
+
+               push dword ptr [ebp + _stringOffset]   ;  num.substr(0, i)
+               push word ptr [ebp + _stringSize]
+               push word ptr 0 ; pos
+               push word ptr[ebp + _firstLoopIndex] ; len
+               lea edx, [ebp+ _subString1]
+               push edx
                call subString
 
-               push [ebp + _stringOffset]   ;  num.substr(i, j)
-               push [ebp + _stringSize]
-               push [ebp + _firstLoopIndex] ; pos
-               push [ebp + _secondLoopIndex] ; len
-               push offset subString2
+               push dword ptr [ebp + _stringOffset]   ;  num.substr(i, j)
+               push word ptr [ebp + _stringSize]
+               push word ptr [ebp + _firstLoopIndex] ; pos
+               push word ptr [ebp + _secondLoopIndex] ; len
+               lea edx, [ebp+ _subString2]
+               push edx
+               ; push offset subString2
                call subString
 
-               push [ebp + _stringOffset]   ;  num.substr(i + j)
-               push [ebp + _stringSize]
-               mov ax, [ebp + _firstLoopIndex]
-               add ax, [ebp + _secondLoopIndex]
+               push dword ptr [ebp + _stringOffset]   ;  num.substr(i + j)
+               push word ptr [ebp + _stringSize]
+               mov ax, word ptr [ebp + _firstLoopIndex]
+               add ax, word ptr [ebp + _secondLoopIndex]
                push ax ; pos
                mov cx, [ebp + _stringSize]
                sub cx, ax
                push cx ; len
-               push offset subString2
+               lea edx, [ebp+ _subString3]
+               push edx
                call subString     
-
-               push offset subString1        ; check addition
-               push [ebp + _firstLoopIndex]  ; first string size
-               push offset subString2
-               push [ebp + _secondLoopIndex] ; second string size
-               push offset subString3
-               push cx                       ; third string size
+               
+               ; check addition
                push offset res
-               push offset num
-               push N
+               push cx                       ; third string size
+               lea edx, [ebp+ _subString3]
+               push edx
+               push word ptr [ebp + _secondLoopIndex] ; second string size
+               lea edx, [ebp+ _subString2]
+               push edx
+               push word ptr [ebp + _firstLoopIndex]  ; first string size
+               lea edx, [ebp+ _subString1]
+               push edx
                call checkAddition
+               
                cmp al, 1
                je foundSum
                
-               mov ax, [ebp + secondLoopIndex]
+               mov ax, [ebp + _secondLoopIndex]
                add ax, 1
-               mov [ebp + secondLoopIndex], ax
+               mov [ebp + _secondLoopIndex], ax
                jmp secondLoop
 
      endSecondLoop:
-          mov ax, [ebp + firstLoopIndex]
+          mov ax, word ptr [ebp + _firstLoopIndex]
           add ax, 1
-          mov [ebp + firstLoopIndex], ax
+          mov [ebp + _firstLoopIndex], ax
           jmp firstLoop
      
      foundSum:
-          push offset res       ; res.push_front(num.substr(i, j))
-          push offset subString2
-          push offset res
+
+          push offset res ; res.push_front(num.substr(i, j))
+          lea edx, [ebp+ _subString2]
+          push edx
+          call writeString
+          
           call PushFront
 
           push offset res       ;num.substr(0, i)
-          push offset subString1
-          push offset res
-          call PushFront
+          lea edx, [ebp+ _subString1]
+          push edx
 
+          call PushFront
+          
           mov al, 1
           jmp done
 
@@ -127,10 +134,12 @@ IsAddSeq PROC
           jmp done
      
      done:
-          ;pop 
+		  pop edi
+		  pop edx
+		  pop ecx
+		  pop ebx
+		  
           mov esp, ebp
           pop ebp
-	     ret 8
+	     ret 10
 IsAddSeq ENDP
-
-END main

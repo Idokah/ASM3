@@ -1,38 +1,17 @@
-INCLUDE irvine32.inc
 
-.data
-a byte "abcdef",0
-result byte 0
-sizeA dword 6
-pos dword 4
-len dword 2
-
-
+;receive :
+;offset of string A (DWORD) , size of string A (word)
+;pos (word) - from where
+;len (word) - how many characters from pos
+;offset of substring - it is the result of the function
+;al is 1 if the call was valid (pos + len) is not bigger than A size.
 .code
-
-main PROC
-	push offset a
-	push sizeA
-	push pos
-	push len
-	push offset result
-	call SubString 
-
-
-	mov edx,offset result
-	call writeString
-	
-	call dumpRegs
-	
-main ENDP
-
-
 SubString PROC
 offsetSubstring = 8
 lenSubString = offsetSubstring + 4
-posSubString = lenSubString + 4
-sizeAString = posSubString + 4
-offsetAString = sizeAString + 4
+posSubString = lenSubString + 2
+sizeAString = posSubString + 2
+offsetAString = sizeAString + 2
 	push ebp
 	mov ebp, esp
 
@@ -40,15 +19,14 @@ offsetAString = sizeAString + 4
 	push esi
 	push edx
 	push ecx
-	
 
-	mov ebx, dword ptr [ebp + posSubString] ; ebx = pos
-	mov esi, dword ptr [ebp + sizeAString] ; esi = sizeA
-	add ebx,[ebp+lenSubString]
+	movzx ebx, word ptr [ebp + posSubString] ; ebx = pos
+	movzx esi, word ptr [ebp + sizeAString] ; esi = sizeA
+	add bx, [ebp+lenSubString]
 	inc esi ; because pos is counted from 0 and the size is counted from 1
 	cmp ebx,esi 
 	jg false_ ;if esi < ebx  --> false (pos+len>sizeA)
-	mov ebx,dword ptr [ebp+lenSubString]
+	movzx ebx, word ptr [ebp+lenSubString]
 	cmp ebx, 0 
 	je true_ 	;if bx == 0 --> true (len==0)
 
@@ -56,7 +34,7 @@ offsetAString = sizeAString + 4
 	
 	
 	mov edx, dword ptr [ebp + offsetAString] ; edx = &a
-	mov ebx, dword ptr [ebp + posSubString] ; ebx = pos
+	movzx ebx, word ptr [ebp + posSubString] ; ebx = pos
 
 	mov cl, byte ptr [edx + ebx] ;cl = A[pos]
 	mov edx,[ebp + offsetSubstring] ; edx = &result
@@ -65,12 +43,12 @@ offsetAString = sizeAString + 4
 	inc ebx ; pos++
 	inc edx ; &result ++ 
 	
-	push [ebp+offsetAString] ; push &A
-	push [ebp+sizeAString] 		 ; push a sizeA
-	push ebx 			     ; push pos+1
+	push dword ptr [ebp+offsetAString] ; push &A
+	push word ptr [ebp+sizeAString] 		 ; push a sizeA
+	push bx 			     ; push pos+1
 	mov ebx, [ebp+lenSubString]
 	dec ebx
-	push ebx 				 ; push len-1
+	push bx 				 ; push len-1
 	push edx				 ; push &result+1
 	call SubString
 	
@@ -87,13 +65,12 @@ true_:
 false_:
 	mov al,0
 done:
+    pop ecx
 	pop edx
 	pop esi
 	pop ebx
 	mov esp, ebp
 	pop ebp
-	ret 20
+	ret 14
 	
 SubString ENDP 
-
-END MAIN

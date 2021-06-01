@@ -1,17 +1,3 @@
-INCLUDE irvine32.inc
-
-.data
-validString BYTE "hello",0
-
-.code
-main PROC
-	push offset validString
-	call ReverseString
-	
-	mov edx,offset validString
-	call writeString
-	
-main ENDP
 
 ;receive a string in stack and reverse it
 ReverseString PROC
@@ -43,9 +29,5 @@ pop_loop:
 	mov esp,ebp
 	pop ebp
 	ret 4
-	
-	
 
 ReverseString ENDP
-
-END main

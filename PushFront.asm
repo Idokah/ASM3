@@ -1,35 +1,14 @@
-INCLUDE irvine32.inc
-
-.data
-a byte "abc",0
-b byte "def",0
-N = 12
-
 .code
-main PROC
-push offset a
-push offset b
-
-call PushFront
-mov edx,offset a
-call WriteString
-
-call dumpRegs
-
-main ENDP
-
-;recv offset of string a, offset of string b, and offset of empty string - result
-;returns in result : conactenation of a,b
 
 PushFront PROC
 offsetb=8
 offseta=offsetb+4
-tempResult=-N
+tempResult=-(2*N+1)
 
-    call dumpRegs
 	push ebp
 	mov ebp, esp
-    sub esp,N
+    sub esp,(2*N)
+    sub esp,1
 	push eax
 	push ebx
 	push edx
@@ -61,15 +40,16 @@ copyAToResult:
     mov dh,[eax+ecx]
     mov [ebx+ecx],dh
 	cmp dh,0
-    je copyResultToA
+    je finishResult
     inc ecx
     jmp copyAToResult
 
-    mov ebx,dword ptr[ebp+tempResult]
+finishResult:
+    lea ebx,[ebp+tempResult]
     mov ecx,0
 copyResultToA:
     mov dh,[ebx+ecx]
-    mov [ebx+ecx],dh
+    mov [eax+ecx],dh
     cmp dh,0
     je donePushFront
     inc ecx
@@ -85,9 +65,6 @@ donePushFront:
 
 	mov esp, ebp
 	pop ebp
-    call dumpRegs
 	ret 8
 	
 PushFront ENDP
-
-END main

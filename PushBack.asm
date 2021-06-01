@@ -1,24 +1,7 @@
-INCLUDE irvine32.inc
-
-.data
-a byte "abc",0
-b byte "def",0
-result byte "a",0
-
-.code
-main PROC
-push offset a
-push offset b
-call PushBack
-mov edx,offset a
-call WriteString
-
-call dumpRegs
-
-main ENDP
-
 ;recv offset of string a, offset of string b, and offset of empty string - result
 ;returns in result : conactenation of a,b
+.code
+
 PushBack PROC
 offsetb=8
 offseta=offsetb+4
@@ -60,7 +43,4 @@ donePushBack:
 	mov esp, ebp
 	pop ebp
 	ret 8
-	
 PushBack ENDP
-
-END main

@@ -1,26 +1,5 @@
-
-INCLUDE irvine32.inc
-
-.data
-
-invalidString BYTE 0, "hello",0
-validString BYTE "hello",0
-len1 WORD 6
-
-
-.code
-
-main PROC
-mov eax,0
-push word ptr len1
-push OFFSET invalidString
-call IsValid
-call WriteInt
-
-call dumpRegs
-main ENDP
-
 ;receive offset of string and length in stack
+;return in al 1 if the size is bigger than 1 abd the string is not starting with '0'
 IsValid PROC
 len=12
 string = 8
@@ -45,5 +24,3 @@ done:
 	ret 6
 
 IsValid ENDP
-
-END main
