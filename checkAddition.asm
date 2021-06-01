@@ -3,32 +3,17 @@ INCLUDE irvine32.inc
 .data
 num byte "199100199", 0
 N=Lengthof num
-res byte N*4+1 dup (0)
-
+res byte N*2+1 dup (0)
+;235813
 aStr BYTE "1",0
 aSize WORD 1
 bStr BYTE "99",0
 bSize WORD 2
 cStr BYTE "100199",0
 cSize WORD 6
-;addStringRes BYTE N dup (0)
 subStringRes BYTE N dup (0)
 
 .code
-main PROC
-     call dumpRegs
-     push offset res
-     push cSize
-     push offset cStr
-     push bSize
-     push offset bStr
-     push aSize
-     push offset aStr
-     ;push offset num
-     ;push stringSize
-     call checkAddition
-     call dumpRegs
-main ENDP
 
 ; Receive 
 ; return 
@@ -106,7 +91,24 @@ checkAddition PROC
 
      ; call substr
      ; if (sum != c.substr(0, sum.size())) return false
-     
+     push dword ptr [ebp + _cOffset]            ; calc (sum != c.substr(0, sum.size())) for the ending condition
+	push word ptr [ebp + _cSize]
+     mov ax, 0
+	push ax                        ; pos  
+	push cx
+	push offset subStringRes
+	call SubString 
+
+     mov edx, offset subStringRes ; delete
+     call crlf
+     call writeString
+
+     push offset subStringRes            ; if (sum == c) return true
+     push ebx
+     call CmpStr
+     cmp al, 0
+     je _false
+
      mov edx, offset res
      call writeString
            ;;call dumpRegs
@@ -376,11 +378,6 @@ val PROC
      push ebx
      push ecx
 
-     mov edx, dword ptr [ebp + stringPtrOffset]
-     call crlf
-     call writeString
-
-
      mov edx, 0
      mov dx, word ptr [ebp + locationOffset]
 	mov bx, word ptr [ebp + stringSizeOffset] 
@@ -557,5 +554,25 @@ done:
 	ret 14
 	
 SubString ENDP 
+
+main PROC
+     call dumpRegs
+     push offset res
+     push cSize
+     push offset cStr
+     push bSize
+     push offset bStr
+     push aSize
+     push offset aStr
+     ;push offset num
+     ;push stringSize
+     call checkAddition
+     call crlf
+     call writeInt
+     mov edx, offset res
+     call crlf
+     call writeString
+     call dumpRegs
+main ENDP
 
 END main
