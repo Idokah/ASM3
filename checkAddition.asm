@@ -3,7 +3,7 @@ INCLUDE irvine32.inc
 .data
 num byte "199100199", 0
 N=Lengthof num
-res byte N*2+1 dup (0)
+res byte N*4+1 dup (0)
 
 aStr BYTE "1",0
 aSize WORD 1
@@ -16,6 +16,7 @@ subStringRes BYTE N dup (0)
 
 .code
 main PROC
+     call dumpRegs
      push offset res
      push cSize
      push offset cStr
@@ -25,7 +26,6 @@ main PROC
      push offset aStr
      ;push offset num
      ;push stringSize
-     call dumpRegs
      call checkAddition
      call dumpRegs
 main ENDP
@@ -41,12 +41,11 @@ checkAddition PROC
      _cSize=_cOffset+4
      _resOffset=_cSize+2
      _addStringRes=-4
-
+     ;call dumpRegs
      push ebp
 	mov ebp, esp
      sub esp, N
 
-     push eax
      push ebx
      push ecx
      push edx
@@ -62,9 +61,11 @@ checkAddition PROC
      call writeString
 
      mov eax,0                ; if !isValid(a) return false
+     ;;call dumpRegs
      push word ptr [ebp + _aSize]
 	push dword ptr [ebp + _aOffset]
      call isValid
+     ;;call dumpRegs
      cmp al, 0
      je _false
 	
@@ -74,12 +75,14 @@ checkAddition PROC
      cmp al, 0
      je _false
 
+     ;;call dumpRegs
      push ebx ; call to add string
 	push dword ptr [ebp + _aOffset]
 	push dword ptr [ebp + _bOffset]
 	push word ptr [ebp + _aSize]
 	push word ptr [ebp + _bSize]
      call addString
+     ;;call dumpRegs
      mov ecx, edx        ; save addString len in ecx
 
      mov edx, ebx  ;delete
@@ -90,17 +93,13 @@ checkAddition PROC
      call crlf
      call writeString
 
+                ;;call dumpRegs
      push dword ptr [ebp + _cOffset]            ; if (sum == c) return true
      push ebx
      call CmpStr
+                ;;call dumpRegs
      cmp al, 1
      je _true
-
-     mov edx, offset cStr     
-     call writeString
-     call crlf
-     mov edx, ebx      
-     call writeString
 
      cmp edi, [ebp + _cSize]
      JAE _false          ; if(len(sum) >= len(c)) retrun false
@@ -108,15 +107,18 @@ checkAddition PROC
      ; call substr
      ; if (sum != c.substr(0, sum.size())) return false
      
-     mov edx, offset res 
-     call crlf
+     mov edx, offset res
      call writeString
+           ;;call dumpRegs
      push offset res
      push ebx
      call pushBack
-     call crlf
+     ;;call dumpRegs
+
+     mov edx, offset res
      call writeString
 
+                ;;call dumpRegs
      push dword ptr [ebp + _cOffset]            ; calc c.substr(sum.size()) for the recurtion
 	push word ptr [ebp + _cSize]
 	push cx                        ; pos  
@@ -125,6 +127,7 @@ checkAddition PROC
 	push ax
 	push offset subStringRes
 	call SubString 
+                ;;call dumpRegs
 
      mov edx, offset subStringRes ; delete
      call crlf
@@ -144,16 +147,23 @@ checkAddition PROC
      push word ptr [ebp + _bSize]
      push dword ptr [ebp + _bOffset]
      call checkAddition
+     jmp done
 
      _false:
           mov al, 0
           jmp done
 
      _true:
-          push [ebp + _resOffset]
+     ;;call dumpRegs
+          mov edx, offset res
+          call writeString
+
+          push offset res
           push ebx
-          push [ebp + _resOffset]
           call PushBack
+          mov edx, offset res
+          call writeString
+          ;;call dumpRegs
           mov al, 1
           jmp done
 
@@ -162,9 +172,9 @@ checkAddition PROC
           pop edx
           pop ecx
           pop ebx
-          pop eax
           mov esp, ebp
           pop ebp
+          ;;call dumpRegs
 	     ret 22
 checkAddition ENDP
 
@@ -348,7 +358,7 @@ done:
 	mov al,byte ptr [ebp-2]
 	mov esp, ebp
 	pop ebp
-	ret 10
+	ret 8
 	
 
 CmpStr ENDP
@@ -444,7 +454,6 @@ donePushBack:
 	mov esp, ebp
 	pop ebp
 	ret 8
-	
 PushBack ENDP
 
 ;receive a string in stack and reverse it
