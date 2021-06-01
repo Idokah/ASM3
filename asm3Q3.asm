@@ -1,7 +1,7 @@
 INCLUDE irvine32.inc
 
 .data
-num byte "199100", 0
+num byte "235813", 0
 N=Lengthof num
 res byte N*2+1 dup (0) ;change
 
@@ -593,7 +593,7 @@ IsAddSeq PROC
      mov ax, [ebp + _stringSize]
      mov cx,2h
      div cx
-     ;add al, 1  ; calc len/2
+     add al, 1  ; calc len/2
      mov [ebp + _firstLoopLimit], ax
 
      firstLoop:
@@ -607,7 +607,7 @@ IsAddSeq PROC
           sub ax, [ebp + _firstLoopIndex]
           mov cx,2
           div cx
-          ;add al, 1  ; calc len/2
+          add al, 1  ; calc len/2
           mov [ebp + _secondLoopLimit], ax
           
           mov ax,1
