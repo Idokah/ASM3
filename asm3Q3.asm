@@ -499,7 +499,6 @@ offsetb=8
 offseta=offsetb+4
 tempResult=-(2*N+1)
 
-    call dumpRegs
 	push ebp
 	mov ebp, esp
     sub esp,(2*N)
@@ -560,7 +559,6 @@ donePushFront:
 
 	mov esp, ebp
 	pop ebp
-    call dumpRegs
 	ret 8
 	
 PushFront ENDP
@@ -574,21 +572,18 @@ IsAddSeq PROC
      _secondLoopIndex=_firstLoopIndex-2
      _firstLoopLimit=_secondLoopIndex-2
      _secondLoopLimit=_firstLoopLimit-2
-     _subString1=_secondLoopLimit-2
+     _subString1=_secondLoopLimit-N
      _subString2=_subString1-N
      _subString3=_subString2-N
-    push ebp
-	mov ebp, esp
+     push ebp
+     mov ebp, esp
 	sub esp, 8
-    sub esp,3*N
+     sub esp,3*N
 
-	
 	push ebx
 	push ecx
 	push edx
-	push edi
-	
-	
+	push edi	
      ;push 
 
      mov bx, 1
@@ -623,7 +618,20 @@ IsAddSeq PROC
                cmp [ebp + _secondLoopIndex], ax
                je endSecondLoop
                
-               call dumpregs
+               push eax
+               mov eax,0
+               mov ax, [ebp + _secondLoopIndex]
+               call crlf
+               call writeInt
+               push eax
+
+               push eax
+               mov eax,0
+               mov ax, [ebp + _secondLoopIndex]
+               call crlf
+               call writeInt
+               push eax
+
                push dword ptr [ebp + _stringOffset]   ;  num.substr(0, i)
                push word ptr [ebp + _stringSize]
                push word ptr 0 ; pos
@@ -631,13 +639,12 @@ IsAddSeq PROC
                lea edx, [ebp+ _subString1]
                push edx
                call subString
-               call dumpregs
 
-               push edx
-               lea edx, [ebp+ _subString1]
-               call writeString
-               pop edx
-               call crlf
+               ;push edx
+               ;lea edx, [ebp+ _subString1]
+               ;call writeString
+               ;pop edx
+               ;call crlf
 
                push dword ptr [ebp + _stringOffset]   ;  num.substr(i, j)
                push word ptr [ebp + _stringSize]
@@ -648,11 +655,11 @@ IsAddSeq PROC
                ; push offset subString2
                call subString
 
-               push edx
-               lea edx, [ebp+ _subString2]
-               call writeString
-               pop edx
-               call crlf
+               ;push edx
+               ;lea edx, [ebp+ _subString2]
+               ;call writeString
+               ;pop edx
+               ;call crlf
 
                push dword ptr [ebp + _stringOffset]   ;  num.substr(i + j)
                push word ptr [ebp + _stringSize]
@@ -667,11 +674,11 @@ IsAddSeq PROC
                ;push offset subString3
                call subString     
                
-               push edx
-               lea edx, [ebp+ _subString3]
-               call writeString
-               pop edx
-               call crlf
+               ;push edx
+               ;lea edx, [ebp+ _subString3]
+               ;call writeString
+               ;pop edx
+               ;call crlf
                
                       ; check addition
                push offset res
@@ -736,18 +743,17 @@ IsAddSeq ENDP
 main PROC
 
 	 push offset res
-     push (N-1)
-     push offset num
+      mov ax, N-1
+      push ax
+      push offset num
 
-	 call dumpRegs
 	 call IsAddSeq
-     mov edx, offset res
-     call crlf
+      mov edx, offset res
+      call crlf
      call writeString
      call crlf
      movzx eax,al
      call writeint
-	 call dumpRegs
 
 	 
 main ENDP
